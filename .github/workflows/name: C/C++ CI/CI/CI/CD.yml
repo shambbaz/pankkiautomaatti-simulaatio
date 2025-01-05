@@ -33,14 +33,22 @@ jobs:
           path: testit.txt
 
       - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v1.0.1
-          release_name: "Version 1.0.1"
-          body: |
-            Tämä on ensimmäinen julkaisu pankkiautomaattiprojektista.
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  id: create_release
+  uses: actions/create-release@v1
+  with:
+    tag_name: v1.0.2 # Päivitä seuraavaan versioon
+    release_name: "Version 1.0.2"
+    body: |
+      Tämä julkaisu sisältää ohjelma.exe-tiedoston.
+    draft: false
+    prerelease: false
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+- name: Upload Release Asset
+  uses: actions/upload-release-asset@v1
+  with:
+    upload_url: ${{ steps.create_release.outputs.upload_url }}
+    asset_path: ./ohjelma.exe
+    asset_name: ohjelma.exe
+    asset_content_type: application/octet-stream

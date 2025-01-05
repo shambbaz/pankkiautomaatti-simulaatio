@@ -31,3 +31,23 @@ jobs:
       with:
         name: test-results
         path: testit.txt
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      with:
+        tag_name: v1.0.0
+        release_name: "Version 1.0.0"
+        body: |
+          Tämä on ensimmäinen julkaisu pankkiautomaattiprojektista.
+        draft: false
+        prerelease: false
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./ohjelma.exe
+        asset_name: ohjelma.exe
+        asset_content_type: application/octet-stream

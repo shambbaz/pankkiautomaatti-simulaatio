@@ -36,8 +36,8 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: v1.0.0
-          release_name: "Version 1.0.0"
+          tag_name: v1.0.1
+          release_name: "Version 1.0.1"
           body: |
             Tämä on ensimmäinen julkaisu pankkiautomaattiprojektista.
           draft: false

@@ -56,4 +56,8 @@ Pipeline on määritelty tiedostossa **`.github/workflows/ci.yml`**, ja se suori
    ```bash
    gcc main.c -o ohjelma.exe
 
+
+   CI/CD-käyttö
+Kaikki commitit branchissa main käynnistävät automaattisesti pipeline-prosessin.
+
    

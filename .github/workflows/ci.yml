@@ -31,16 +31,16 @@ jobs:
         with:
           name: test-results
           path: testit.txt
-- name: Create GitHub Release
-  id: create_release
-  uses: actions/create-release@v1
-  with:
-    tag_name: v1.0.0
-    release_name: "Version 1.0.0"
-    body: |
-      Tämä on ensimmäinen julkaisu pankkiautomaattiprojektista.
-    draft: false
-    prerelease: false
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v1.0.0
+          release_name: "Version 1.0.0"
+          body: |
+            Tämä on ensimmäinen julkaisu pankkiautomaattiprojektista.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

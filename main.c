@@ -1,112 +1,112 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <curl/curl.h>
 
 #define MAX_FILENAME 50
 #define MAX_PIN 10
 
-// Funktio lukee tilitiedoston ja palauttaa saldon, jos PIN on oikea
-int lue_tiedosto(char *tiedostonimi, char *kayttaja_pin, int *saldo) {
-    FILE *tiedosto;
-    char tiedosto_pin[MAX_PIN];
+// Funktio käsittelee API:n vastauksen
+size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
+    strcat((char *)userp, (char *)contents);
+    return size * nmemb;
+}
 
-    tiedosto = fopen(tiedostonimi, "r");
-    if (tiedosto == NULL) {
-        printf("Tilitiedostoa ei voitu avata. Tarkista tilinumero.\n");
+// Funktio lähettää API-pyynnön ja palauttaa vastauksen
+int send_api_request(const char *url, const char *data, char *response) {
+    CURL *curl;
+    CURLcode res;
+
+    curl = curl_easy_init();
+    if (curl) {
+        struct curl_slist *headers = NULL;
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
+
+        res = curl_easy_perform(curl);
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        if (res != CURLE_OK) {
+            fprintf(stderr, "cURL error: %s\n", curl_easy_strerror(res));
+            return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+// Tarkistaa saldon API:sta
+int tarkista_saldo_api(char *tilinumero, char *pin, int *saldo) {
+    char url[] = "http://127.0.0.1:5000/api/balance";
+    char postdata[100], response[100] = "";
+
+    snprintf(postdata, sizeof(postdata), "{\"account\": \"%s\", \"pin\": \"%s\"}", tilinumero, pin);
+
+    if (!send_api_request(url, postdata, response)) {
+        printf("Saldon tarkistus epäonnistui.\n");
         return 0;
     }
 
-    // Lue PIN ensimmaiselta rivilta
-    if (fgets(tiedosto_pin, MAX_PIN, tiedosto) == NULL) {
-        printf("Tilitiedostoa ei voitu lukea.\n");
-        fclose(tiedosto);
+    // Lue vastaus JSON-muodosta
+    if (strstr(response, "balance") != NULL) {
+        sscanf(response, "{\"balance\":%d}", saldo);
+        return 1;
+    }
+
+    printf("Virheellinen vastaus API:lta: %s\n", response);
+    return 0;
+}
+
+// Nostaa rahaa API:n kautta
+int nosta_rahaa_api(char *tilinumero, char *pin, int summa, int *saldo) {
+    char url[] = "http://127.0.0.1:5000/api/withdraw";
+    char postdata[150], response[100] = "";
+
+    snprintf(postdata, sizeof(postdata), "{\"account\": \"%s\", \"pin\": \"%s\", \"amount\": %d}", tilinumero, pin, summa);
+
+    if (!send_api_request(url, postdata, response)) {
+        printf("Nosto epäonnistui.\n");
         return 0;
     }
 
-    // Poista mahdollinen rivinvaihto merkkijonosta
-    tiedosto_pin[strcspn(tiedosto_pin, "\n")] = 0;
+    if (strstr(response, "new_balance") != NULL) {
+        sscanf(response, "{\"withdrawn\":%*d,\"new_balance\":%d}", saldo);
+        return 1;
+    }
 
-    if (strcmp(tiedosto_pin, kayttaja_pin) != 0) {
-        printf("Vaarin syotetty PIN-koodi.\n");
-        fclose(tiedosto);
+    printf("Virheellinen vastaus API:lta: %s\n", response);
+    return 0;
+}
+
+// Tallettaa rahaa API:n kautta
+int talleta_rahaa_api(char *tilinumero, char *pin, int summa, int *saldo) {
+    char url[] = "http://127.0.0.1:5000/api/deposit";
+    char postdata[150], response[100] = "";
+
+    snprintf(postdata, sizeof(postdata), "{\"account\": \"%s\", \"pin\": \"%s\", \"amount\": %d}", tilinumero, pin, summa);
+
+    if (!send_api_request(url, postdata, response)) {
+        printf("Talletus epäonnistui.\n");
         return 0;
     }
 
-    // Lue saldo toiselta rivilta
-    if (fscanf(tiedosto, "%d", saldo) != 1) {
-        printf("Saldoa ei voitu lukea tiedostosta.\n");
-        fclose(tiedosto);
-        return 0;
+    if (strstr(response, "new_balance") != NULL) {
+        sscanf(response, "{\"deposited\":%*d,\"new_balance\":%d}", saldo);
+        return 1;
     }
 
-    fclose(tiedosto);
-    return 1;
+    printf("Virheellinen vastaus API:lta: %s\n", response);
+    return 0;
 }
 
-// Funktio tallentaa paivitetyn saldon tiedostoon
-int paivita_saldo_tiedostoon(char *tiedostonimi, char *pin, int saldo) {
-    FILE *tiedosto;
-
-    tiedosto = fopen(tiedostonimi, "w");
-    if (tiedosto == NULL) {
-        printf("Tilitiedostoa ei voitu avata kirjoittamista varten.\n");
-        return 0;
-    }
-
-    // Kirjoita PIN ja uusi saldo tiedostoon
-    fprintf(tiedosto, "%s\n%d\n", pin, saldo);
-    fclose(tiedosto);
-    return 1;
-}
-
-void tarkista_saldo(int saldo) {
-    printf("Tilisi saldo on: %d euroa\n", saldo);
-}
-
-int nosta_rahaa(int saldo) {
-    int summa;
-    printf("Syota nostettava summa (20-1000 euroa, 10 euron valein): ");
-    if (scanf("%d", &summa) != 1 || summa <= 0) {
-        printf("Virheellinen syote. Syota positiivinen kokonaisluku.\n");
-        while (getchar() != '\n');
-        return saldo;
-    }
-
-    if (summa % 10 != 0 || summa < 20 || summa > 1000) {
-        printf("Virheellinen summa. Voit nostaa vain 20-1000 euroa, 10 euron valein.\n");
-        return saldo;
-    }
-
-    if (summa > saldo) {
-        printf("Tililla ei ole tarpeeksi katetta.\n");
-    } else {
-        saldo -= summa;
-        printf("Nostit %d euroa. Jaljella oleva saldo: %d euroa\n", summa, saldo);
-    }
-
-    return saldo;
-}
-
-int talleta_rahaa(int saldo) {
-    int summa;
-    printf("Syota talletettava summa: ");
-    if (scanf("%d", &summa) != 1 || summa <= 0) {
-        printf("Virheellinen syote. Syota positiivinen kokonaisluku.\n");
-        while (getchar() != '\n');
-        return saldo;
-    }
-
-    saldo += summa;
-    printf("Talletit %d euroa. Uusi saldo: %d euroa\n", summa, saldo);
-
-    return saldo;
-}
-
-void lopeta() {
-    printf("Kiitos, etta kaytit automaattia. Hyvaa paivan jatkoa!\n");
-}
-
-int valikko(int saldo) {
+int valikko(char *tilinumero, char *pin, int saldo) {
     int valinta;
 
     do {
@@ -117,26 +117,40 @@ int valikko(int saldo) {
         printf("4. Lopeta\n");
         printf("Valintasi: ");
         if (scanf("%d", &valinta) != 1) {
-            printf("Virheellinen syote. Kayta vain numeroita.\n");
+            printf("Virheellinen syöte. Käytä vain numeroita.\n");
             while (getchar() != '\n');
             continue;
         }
 
         switch (valinta) {
             case 1:
-                tarkista_saldo(saldo);
+                if (tarkista_saldo_api(tilinumero, pin, &saldo)) {
+                    printf("Tilisi saldo on: %d euroa\n", saldo);
+                }
                 break;
-            case 2:
-                saldo = nosta_rahaa(saldo);
+            case 2: {
+                int summa;
+                printf("Syötä nostettava summa (20-1000 euroa, 10 euron välein): ");
+                scanf("%d", &summa);
+                if (nosta_rahaa_api(tilinumero, pin, summa, &saldo)) {
+                    printf("Nostit %d euroa. Uusi saldo: %d euroa\n", summa, saldo);
+                }
                 break;
-            case 3:
-                saldo = talleta_rahaa(saldo);
+            }
+            case 3: {
+                int summa;
+                printf("Syötä talletettava summa: ");
+                scanf("%d", &summa);
+                if (talleta_rahaa_api(tilinumero, pin, summa, &saldo)) {
+                    printf("Talletit %d euroa. Uusi saldo: %d euroa\n", summa, saldo);
+                }
                 break;
+            }
             case 4:
-                lopeta();
+                printf("Kiitos, että käytit automaattia. Hyvää päivän jatkoa!\n");
                 break;
             default:
-                printf("Virheellinen valinta. Yrita uudelleen.\n");
+                printf("Virheellinen valinta. Yritä uudelleen.\n");
         }
     } while (valinta != 4);
 
@@ -148,25 +162,17 @@ int main() {
     char pin[MAX_PIN];
     int saldo;
 
-    printf("Syota tilinumero: ");
+    printf("Syötä tilinumero: ");
     scanf("%s", tilinumero);
 
-    // Lisaa tiedostopaate tilinumeroon
-    strcat(tilinumero, ".tili");
-
-    printf("Syota PIN-koodi: ");
+    printf("Syötä PIN-koodi: ");
     scanf("%s", pin);
 
-    if (!lue_tiedosto(tilinumero, pin, &saldo)) {
-        printf("Ohjelma paattyy virheellisen syotteen vuoksi.\n");
+    if (!tarkista_saldo_api(tilinumero, pin, &saldo)) {
+        printf("Ohjelma päättyy virheellisen syötteen vuoksi.\n");
         return 1;
     }
 
-    saldo = valikko(saldo);
-
-    if (!paivita_saldo_tiedostoon(tilinumero, pin, saldo)) {
-        printf("Saldoa ei voitu paivittaa tiedostoon.\n");
-    }
-
+    valikko(tilinumero, pin, saldo);
     return 0;
 }

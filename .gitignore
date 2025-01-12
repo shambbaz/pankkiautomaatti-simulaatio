@@ -1,3 +1,8 @@
 app.py
 ohjelma.exe
 pankkiautomaatti-simulaatio/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

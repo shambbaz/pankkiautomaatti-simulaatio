@@ -1,74 +1,54 @@
-# Pankkiautomaattisimulaatio
+# Pankkiautomaatti-Simulaatio (KT6OHJ)
 
-Tämä projekti on yksinkertainen pankkiautomaattisimulaatio, joka on toteutettu osana Ohjelmointi 1 -kurssia. Projektin tavoitteena oli oppia ohjelmoinnin perusperiaatteita, tiedostojen käsittelyä, syötteiden validointia ja modernien REST API -ratkaisujen käyttöä.
+## Projektin kuvaus
 
-## Projektin sisältö
+Tämä projekti keskittyy modernin Flask API -sovelluksen kehittämiseen ja integrointiin CI/CD-pipelineen. Projektissa käytettiin versiohallintaan GitHubia ja tavoitteena oli simuloida pankkiautomaatin perustoimintoja skaalautuvassa ja automatisoidussa ympäristössä. Toteutuksessa huomioitiin ohjelmistokehityksen parhaat käytännöt sekä työkalut, joita hyödynnetään myös ammattimaisessa ohjelmistokehityksessä.
 
-Pankkiautomaattiohjelma simuloi oikean pankkiautomaatin toimintaa seuraavilla ominaisuuksilla:
-- PIN-koodin tarkistus
-- Tilin saldon tarkistus
-- Rahan nostaminen (määriteltyjen ehtojen mukaisesti)
-- Rahan tallettaminen
-- Reaaliaikainen tiedonkäsittely REST API:n kautta
-- Saldo tallennetaan ja päivitetään tiedostoon tai API:lle ohjelman aikana.
+## Projektin kohokohdat
 
-Ohjelma käsittelee REST API -pohjaisia tili- ja saldotietoja ja toimii komentorivikäyttöliittymän avulla.
+### Flask API:n kehitys
+- Sovellus toteutettiin käyttäen Flask-kehystä, joka on moderni ja kevyt ratkaisu API-kehitykseen.
+- Flaskin avulla luotiin tehokas ja helposti ylläpidettävä palvelu pankkiautomaattitoiminnoille, kuten tilitapahtumien simulointiin.
 
-## REST API
+### CI/CD-pipeline
+- GitHub Actions -pipeline automatisoi koodin rakentamisen ja testauksen jokaisen päivityksen yhteydessä.
+- Pipeline varmistaa, että koodi on jatkuvasti toimivaa ja testattua, mikä minimoi tuotantoympäristössä esiintyvät ongelmat.
 
-Projektissa lisättiin Flask-pohjainen REST API, joka tarjoaa seuraavat reitit:
-- **`/api/balance`** (POST): Tarkistaa tilin saldon syötetyllä PIN-koodilla.
-- **`/api/withdraw`** (POST): Nostaa rahaa tililtä, jos saldo riittää.
-- **`/api/deposit`** (POST): Tallettaa rahaa tilille.
+### AWS Elastic Beanstalk
+- Projekti sisälsi AWS Elastic Beanstalk -ympäristön konfiguroinnin Python-sovelluksen isännöimiseksi.
+- Vaikka tekniset rajoitteet estivät loppuunsaattamisen, projektissa opittiin monipuolisesti AWS:n ympäristönhallinnan perusteista ja käytännöistä.
 
-REST API mahdollistaa reaaliaikaisen tiedonkäsittelyn pankkiautomaattisovelluksessa ja eriyttää tietojen hallinnan sovelluksen logiikasta.
+## Oppimiskokemukset
 
-## Tekninen toteutus
+- **Flask ja API-kehitys:** Projektin aikana kehittyivät API-kehitykseen liittyvät taidot, mukaan lukien REST-rajapintojen suunnittelu ja toteutus.
+- **CI/CD-käytännöt:** Pipelinien rakentaminen GitHub Actionsilla tarjosi käytännön kokemusta automaation hyödyntämisestä ohjelmistokehityksessä.
+- **Pilvipalvelut:** AWS Elastic Beanstalk -ympäristön hallinta opetti pilvipalveluiden käytön perusteita ja niiden konfigurointia tuotantoympäristöjä varten.
 
-Ohjelma on toteutettu **C-kielellä**, ja siihen on integroitu Flask REST API. Projekti hyödyntää myös **GitHub Actions** -pohjaista CI/CD-pipelineä, joka sisältää:
-- **Continuous Integration (CI):** Ohjelman kääntäminen ja yksikkötestien ajaminen automatisoidusti.
-- **Continuous Deployment (CD):** Uuden version julkaiseminen automaattisesti GitHub Releases -välilehdelle.
 
-### REST API -teknologiat
-- **Flask**: Kevyt Python-websovelluskehys REST API:n toteuttamiseen.
-- **libcurl**: HTTP-pyyntöjen toteuttamiseen C-ohjelmasta käsin.
 
-Pipeline suorittaa seuraavat vaiheet:
-1. Koodin kääntäminen (`gcc`).
-2. Testien suorittaminen Python-skriptillä.
-3. Testitulosten tallentaminen (artifact).
-4. Uuden version julkaiseminen GitHub Releases -välilehdelle (mukana ohjelma.exe).
+### Miksi tämä projekti on merkityksellinen?
+Tämä projekti kuvastaa käytännön kokemusta ohjelmistokehityksen eri osa-alueilta, joita voidaan hyödyntää monipuolisesti kehittämisen ja teknologian taustatehtävissä, kuten testausautomaation harjoittelupaikoissa. Flaskin kaltaisen modernin kehitysalustan käyttö, CI/CD-pipelinen rakentaminen sekä AWS:n ympäristöjen hallinta osoittavat kykyä omaksua uusia teknologioita ja ratkaista ongelmia joustavasti.
 
-## Projektin rakenne
 
-Seuraavat tiedostot kuuluvat projektiin:
-- **`main.c`** - Pääohjelma pankkiautomaattisovellukselle. Sisältää REST API:n integraation.
-- **`flask_api/app.py`** - Flask REST API -kooditiedosto pankkiautomaattisovellusta varten.
-- **`12345.tili`** - Testitiedosto tilinumeroille, PIN-koodeille ja saldoille.
-- **`run_tests.py`** - Python-skripti testien automatisoimiseksi.
-- **`.github/workflows/ci.yml`** - CI/CD-pipeline GitHub Actions -työnkulkua varten.
-- **`README.md`** - Projektin dokumentaatio.
-- **`testit.txt`** - Testitulosten tallennustiedosto.
 
-## Testaus
 
-Ohjelman testaamiseksi on luotu automatisoitu testausjärjestelmä Python-skriptillä sekä Postmanilla Flask REST API:n testaamiseksi. Skripti ja manuaalinen testaus kattaa seuraavat skenaariot:
-- Normaali käyttö, kuten PIN-koodin syöttö, saldon tarkistus, talletus ja nosto.
-- Poikkeustilanteet, kuten virheellinen PIN, negatiiviset summat ja virheelliset syötteet.
-- REST API:n virheiden ja onnistuneiden pyyntöjen validointi.
+## Käyttöohjeet
 
-Testitulokset tallennetaan tiedostoon **testit.txt**.
-
-## CI/CD-prosessi
-
-Pipeline on määritelty tiedostossa **`.github/workflows/ci.yml`**, ja se suorittaa:
-- Ohjelman kääntämisen ja testien ajamisen jokaisen commitin yhteydessä.
-- Uuden version julkaisun GitHub Releases -välilehdelle, jossa julkaisu sisältää käännetyn ohjelman (`ohjelma.exe`) ja lähdekoodin.
-
-## Kuinka käyttää
-
-1. Lataa projektin tiedostot GitHubista.
-2. Käynnistä Flask REST API:
+### Paikallinen asennus
+1. **Clonaa repositorio:**
    ```bash
-   cd flask_api
-   python app.py
+   git clone https://github.com/shambbaz/pankkiautomaatti-simulaatio.git
+   cd pankkiautomaatti-simulaatio
+
+Luo ja aktivoi virtuaaliympäristö:
+
+python -m venv venv
+source venv/bin/activate  # Windowsissa: venv\Scripts\activate
+pip install -r requirements.txt
+Käynnistä Flask API:
+flask run
+
+
+API on nyt käytettävissä osoitteessa: http://127.0.0.1:5000
+
+

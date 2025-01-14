@@ -2,7 +2,7 @@
 
 ## Projektin kuvaus
 
-Tämä projekti keskittyy modernin Flask API -sovelluksen kehittämiseen ja integrointiin CI/CD-pipelineen. Projektissa käytettiin versiohallintaan GitHubia ja tavoitteena oli simuloida pankkiautomaatin perustoimintoja skaalautuvassa ja automatisoidussa ympäristössä. Toteutuksessa huomioitiin ohjelmistokehityksen parhaat käytännöt sekä työkalut, joita hyödynnetään myös ammattimaisessa ohjelmistokehityksessä.
+Tämä projekti oli osa Ohjelmointi 1 kurssin toteutusta, jossa keskityin vielä itse  modernin Flask API -sovelluksen kehittämiseen ja integrointiin CI/CD-pipelineen. Projektissa käytettiin versiohallintaan GitHubia ja tavoitteena oli simuloida pankkiautomaatin perustoimintoja skaalautuvassa ja automatisoidussa ympäristössä. Toteutuksessa huomioitiin ohjelmistokehityksen parhaat käytännöt sekä työkalut, joita hyödynnetään myös ammattimaisessa ohjelmistokehityksessä.
 
 ## Projektin kohokohdat
 
@@ -34,21 +34,17 @@ Tämä projekti kuvastaa käytännön kokemusta ohjelmistokehityksen eri osa-alu
 
 ## Käyttöohjeet
 
-### Paikallinen asennus
-1. **Clonaa repositorio:**
+## Ohjelman Suorittaminen
+
+Seuraa näitä ohjeita käynnistääksesi pankkiautomaattisimulaation:
+
+### 1. Esivaatimukset
+- Varmista, että järjestelmääsi on asennettu GCC (GNU Compiler Collection).
+- Pythonin tulee olla asennettuna testiskriptien suorittamiseksi.
+
+### 2. Käännä ja Suorita Ohjelma
+1. Avaa terminaali ja siirry hakemistoon, jossa `main.c` sijaitsee.
+2. Käännä ohjelma komennolla:
    ```bash
-   git clone https://github.com/shambbaz/pankkiautomaatti-simulaatio.git
-   cd pankkiautomaatti-simulaatio
-
-Luo ja aktivoi virtuaaliympäristö:
-
-python -m venv venv
-source venv/bin/activate  # Windowsissa: venv\Scripts\activate
-pip install -r requirements.txt
-Käynnistä Flask API:
-flask run
-
-
-API on nyt käytettävissä osoitteessa: http://127.0.0.1:5000
-
+   gcc main.c -o ohjelma.exe
 
